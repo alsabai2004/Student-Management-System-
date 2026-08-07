@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>نظام إدارة الطلاب</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: darkblue;
+            color: white;
+            font-family: 'Tahoma', 'Arial', 'Segoe UI', sans-serif;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: darkblue;
+            padding: 15px 20px;
+            border-bottom: 2px solid crimson;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+/* الشعار */ 
+        .logo {
+            font-size: 24px;
+            color: crimson;
+            font-weight: bold;
+        }
+/* ازرار التنقل */ 
+        .nav a {
+            background: crimson;
+            padding: 8px 15px;
+            border-radius: 10px;
+            color: white;
+            text-decoration: none;
+            margin: 5px;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        .nav a:hover { background: darkred; }
+/* الحاوية  */ 
+        .container {
+            max-width: 1000px;
+            margin: 30px auto;
+            background: midnightblue;
+            padding: 25px;
+            border-radius: 15px;
+            min-height: 400px;
+        }
+
+        h2 { color: crimson; margin-bottom: 20px; }
+
+        .btn {
+            background: crimson;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .btn-green { background: mediumseagreen; }
+        .btn-green:hover { background: seagreen; }
+        .btn-red { background: red; }
+        .btn-red:hover { background: darkred; }
+
+        input {
+            background: darkslateblue;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            width: 100%;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+        /* الجداول */ 
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid crimson;
+        }
+        th {
+            background: crimson;
+            color: white;
+        }
+        /* بطاقات النتائج */ 
+        .result-card {
+            background: darkslateblue;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 5px solid mediumseagreen;
+        }
+        .result-error {
+            border-left: 5px solid red;
+        }
+        .empty-message {
+            text-align: center;
+            padding: 40px;
+            color: lightgray;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid crimson;
+            color: lightgray;
+            margin-top: 30px;
+        }
+
+        .login-box {
+            max-width: 400px;
+            margin: 0 auto;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="logo">📚 نظام إدارة الطلاب</div>
+    <div class="nav" id="navMenu">
+        <!-- الأزرار ستظهر فقط بعد تسجيل الدخول -->
+    </div>
+</div>
+
+<div class="container" id="appContainer">
+    <!-- المحتوى سيتغير عبر JavaScript -->
+</div>
+<div class="footer">
+    Mohammed Najeeb Alsabai © 2026
+</div>
+
+<script>
+    // ===== متغير حالة تسجيل الدخول (في الذاكرة فقط، غير مخزن) =====
+    let isLoggedIn = false;
+
+    // ===== دوال التخزين للطلاب فقط =====
+    /* دالة جلب الطلاب */ 
+    function getStudents() {
+        let students = localStorage.getItem("students");
+        if (students === null) {
+            return [];
+        } else {
+            return JSON.parse(students);
+        }
+    }
+
+    function saveStudents(students) {
+        localStorage.setItem("students", JSON.stringify(students));
+    }
+
+    // ===== إظهار أزرار التنقل =====
+    function showNavButtons() {
+        let navMenu = document.getElementById("navMenu");
+        navMenu.innerHTML = `
+            <a onclick="showSection('home')">🏠 الرئيسية</a>
+            <a onclick="showSection('add')">➕ إضافة</a>
+            <a onclick="showSection('view')">📋 عرض</a>
+            <a onclick="showSection('delete')">🗑️ حذف</a>
+            <a onclick="logout()">🚪 خروج</a>
+        `;
+    }
+
+    function hideNavButtons() {
+        let navMenu = document.getElementById("navMenu");
+        navMenu.innerHTML = "";
+    }
+
+    // ===== صفحة تسجيل الدخول =====
+    function showLoginPage() {
+        hideNavButtons();
+        let container = document.getElementById("appContainer");
+        container.innerHTML = `
+            <div class="login-box">
+                <h2>🔐 تسجيل الدخول</h2>
+                <input type="text" id="username" placeholder="اسم المستخدم">
+                <input type="password" id="password" placeholder="كلمة المرور">
+                <button class="btn" onclick="login()" style="width:100%;">دخول</button>
+            </div>
+        `;
+    }
+
+    function login() {
+        let username = document.getElementById("username").value;
+        let password = document.getElementById("password").value;
+
+        if (username === "admin" && password === "1234") {
+            isLoggedIn = true;
+            alert("تم تسجيل الدخول بنجاح");
+            showNavButtons();
+            showSection('home');
+        } else {
+            alert("خطأ في اسم المستخدم أو كلمة المرور");
+        }
+    }
+
+    function logout() {
+        isLoggedIn = false;
+        showLoginPage();
+    }
+
+    // ===== تحديث عدد الطلاب =====
+    function updateTotalCount() {
+        let totalSpan = document.getElementById("totalCount");
+        if (totalSpan) {
+            let students = getStudents();
+            totalSpan.innerHTML = students.length;
+        }
+    }
+
+    // ===== الصفحة الرئيسية =====
+    function showHome() {
+        if (isLoggedIn === false) { showLoginPage(); return; }
+        
+        let students = getStudents();
+        let container = document.getElementById("appContainer");
+        container.innerHTML = `
+            <h2>🏠 لوحة التحكم</h2>
+            <div style="background: darkslateblue; padding: 30px; border-radius: 15px; text-align: center;">
+                <p style="font-size: 18px;">مرحباً بك في نظام إدارة الطلاب</p>
+                <p>عدد الطلاب المسجلين: <strong id="totalCount" style="font-size:24px; color:mediumseagreen;">${students.length}</strong></p>
+            </div>
+        `;
+    }
+
+    // ===== إضافة طالب =====
+    function showAdd() {
+        if (isLoggedIn === false) { showLoginPage(); return; }
+        
+        let container = document.getElementById("appContainer");
+        container.innerHTML = `
+            <h2>➕ إضافة طالب جديد</h2>
+            <input type="text" id="id" placeholder="رقم الطالب (ID)">
+            <input type="text" id="name" placeholder="الاسم الكامل">
+            <input type="text" id="department" placeholder="القسم">
+            <input type="number" id="level" placeholder="المستوى (1-4)">
+            <input type="number" id="gpa" placeholder="المعدل (0-4)" step="0.01">
+            <button class="btn btn-green" onclick="addStudent()" style="width:100%;">💾 حفظ الطالب</button>
+            <div id="addResult" style="margin-top:20px;"></div>
+        `;
+    }
+
+    function addStudent() {
+        let id = document.getElementById("id").value;
+        let name = document.getElementById("name").value;
+        let department = document.getElementById("department").value;
+        let level = document.getElementById("level").value;
+        let gpa = document.getElementById("gpa").value;
+
+        if (id === "" || name === "") {
+            alert("الرجاء ملء جميع الحقول");
+            return;
+        }
+
+        let students = getStudents();
+        
+        let idExists = false;
+        for (let i = 0; i < students.length; i++) {
+            if (students[i].id === id) {
+                idExists = true;
+                break;
+            }
+        }
+        
+        if (idExists === true) {
+            alert("❌ هذا الرقم موجود مسبقاً");
+            return;
+        }
+
+        let student = { id: id, name: name, department: department, level: level, gpa: gpa };
+        students.push(student);
+        saveStudents(students);
+
+        let resultDiv = document.getElementById("addResult");
+        resultDiv.innerHTML = `
+            <div class="result-card">
+                <h3 style="color:mediumseagreen;">✅ تمت إضافة الطالب</h3>
+                <p><strong>ID:</strong> ${id}</p>
+                <p><strong>الاسم:</strong> ${name}</p>
+                <p><strong>القسم:</strong> ${department}</p>
+                <p><strong>المستوى:</strong> ${level}</p>
+                <p><strong>المعدل:</strong> ${gpa}</p>
+            </div>
+        `;
+
+        document.getElementById("id").value = "";
+        document.getElementById("name").value = "";
+        document.getElementById("department").value = "";
+        document.getElementById("level").value = "";
+        document.getElementById("gpa").value = "";
+    }
+
+    // ===== عرض الطلاب =====
+    function showView() {
+        if (isLoggedIn === false) { showLoginPage(); return; }
+        
+        let students = getStudents();
+        let container = document.getElementById("appContainer");
+        
+        if (students.length === 0) {
+            container.innerHTML = `
+                <h2>📋 قائمة الطلاب</h2>
+                <div class="empty-message">📭 لا يوجد طلاب حالياً</div>
+            `;
+            return;
+        }
+
+        let table = '<h2>📋 قائمة الطلاب</h2><table>';
+        table = table + '<tr><th>ID</th><th>الاسم</th><th>القسم</th><th>المستوى</th><th>المعدل</th></tr>';
+
+        for (let i = 0; i < students.length; i++) {
+            let s = students[i];
+            table = table + `
+                <tr>
+                    <td>${s.id}</td>
+                    <td>${s.name}</td>
+                    <td>${s.department}</td>
+                    <td>${s.level}</td>
+                    <td>${s.gpa}</td>
+                </tr>
+            `;
+        }
+        table = table + '</table>';
+        container.innerHTML = table;
+    }
+
+    // ===== حذف طالب =====
+    function showDelete() {
+        if (isLoggedIn === false) { showLoginPage(); return; }
+        
+        let container = document.getElementById("appContainer");
+        container.innerHTML = `
+            <h2>🗑️ حذف طالب</h2>
+            <input type="text" id="deleteId" placeholder="أدخل رقم الطالب (ID)">
+            <button class="btn btn-red" onclick="deleteStudent()" style="width:100%;">حذف</button>
+            <div id="deleteResult" style="margin-top:20px;"></div>
+        `;
+    }
+
+    function deleteStudent() {
+        let deleteId = document.getElementById("deleteId").value;
+        let resultDiv = document.getElementById("deleteResult");
+
+        if (deleteId === "") {
+            alert("الرجاء إدخال رقم الطالب");
+            return;
+        }
+
+        let students = getStudents();
+        let found = false;
+        let newStudents = [];
+
+        for (let i = 0; i < students.length; i++) {
+            if (students[i].id !== deleteId) {
+                newStudents.push(students[i]);
+            } else {
+                found = true;
+            }
+        }
+
+        if (found === true) {
+            saveStudents(newStudents);
+            resultDiv.innerHTML = `<div class="result-card">✅ تم حذف الطالب بنجاح</div>`;
+            document.getElementById("deleteId").value = "";
+        } else {
+            resultDiv.innerHTML = `<div class="result-card result-error">❌ لا يوجد طالب بهذا الرقم</div>`;
+        }
+    }
+
+    // ===== التنقل بين الأقسام =====
+    function showSection(section) {
+        if (isLoggedIn === false) { showLoginPage(); return; }
+        
+        if (section === 'home') showHome();
+        else if (section === 'add') showAdd();
+        else if (section === 'view') showView();
+        else if (section === 'delete') showDelete();
+    }
+
+    // ===== بداية التطبيق =====
+    showLoginPage();
+</script>
+
+</body>
+  </html>
